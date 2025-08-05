@@ -2,6 +2,8 @@ import packageJSON from "../../../package.json";
 import express, { Application } from "express";
 import cors from "cors";
 import { Request, Response } from "express";
+import octokit from "@/lib/octokit.ts";
+import asyncHandler from "express-async-handler";
 
 const app: Application = express();
 
@@ -22,6 +24,17 @@ app.get(`/api/v1/version`, (req: Request, res: Response) => {
   };
   res.send(respObj);
 });
+
+app.get("/api/v1/repos", asyncHandler(async (req, res) => {
+  try {
+    const { data } = await octokit.repos.listForUser({
+      username: "pareklund",
+    });
+    res.status(200).json(data);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fetch repositories" });
+  }  res.send({ status: "ok" });
+}));
 
 app.use(express.static("./.local/vite/dist"));
 
